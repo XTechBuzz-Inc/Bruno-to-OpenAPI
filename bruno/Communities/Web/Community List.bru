@@ -1,0 +1,33 @@
+meta {
+  name: Community List
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{apiUrl}}/v2/communities
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept-Encoding: gzip, deflate, br, zstd
+  User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0
+  Accept: */*
+  Accept-Language: en-US,en;q=0.5
+  Referer: https://www.proptechbuzz.com/communities
+  Sec-GPC: 1
+  Connection: keep-alive
+  Cookie: rl_anonymous_id=RS_ENC_v3_IjJmMWE0N2E5LWQ5MzgtNDBlMy04ZDUzLWNhYzdlODc3MWQ4MiI%3D; rl_page_init_referrer=RS_ENC_v3_IiRkaXJlY3Qi; rl_session=RS_ENC_v3_eyJpZCI6MTc2MDQ3Nzc1MTgzMywiZXhwaXJlc0F0IjoxNzYwNDc5ODMwODAyLCJ0aW1lb3V0IjoxODAwMDAwLCJzZXNzaW9uU3RhcnQiOmZhbHNlLCJhdXRvVHJhY2siOnRydWV9; _hjSessionUser_3627636=eyJpZCI6IjE0MzgxNTVjLTNkZTktNTE0NS1iNjQ1LTVhMWMzYWY3OGFkYyIsImNyZWF0ZWQiOjE3NDg2Mzk1MzYwNDMsImV4aXN0aW5nIjp0cnVlfQ==; _ga_C77CW11827=GS2.1.s1760477751$o105$g1$t1760478030$j60$l0$h0; _ga=GA1.1.1529278252.1750402639; _hjSessionUser_6438794=eyJpZCI6IjIzNWQ2ZWIyLWFlYWYtNWQ1ZS1iM2QwLWY0ZmE4MjE3ODQ5ZiIsImNyZWF0ZWQiOjE3NTA0MDY3NTk2NjgsImV4aXN0aW5nIjp0cnVlfQ==; __Secure-next-auth.session-token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..0X3DZRku8IW2_89N.g1xQdiCJtag_Au6wqhrlI5SBsqxyPFYScyUQCHugfMxI_SuyCfHouTt_DxiZcjK5ovboOFHhX-eLlmyn0qX6v2nvP5FtKHTAS2QIS954BOofNZqmypf5wl4HSGGya8vDlc0e1K59OqiM9paYENc6EmZZhx5mDf_AEkpBYBJnNODR7tiCabK6cdNg5jcZNHIMyR3G7Y7xQiRc22tLvUY2MR2TdzOhTo-XKmcxIWZxwvNIvC7xjAkP0Wy5jceac5vcrt20IDjvHLmG-RwQkfK6mBsJzxVYLqzm7Qk2HQTpNl9Kb8V8tr22GnwKxqoeBb7Y_B0_dMVaFB8mhUXoue4Iza-rj9sbCtXwzo7R_uxcAOEbHXXSMH5GbMkbKQsowG0krm4nBnFkhH37wJV8PiciGu4sMjFJcdEh27xDMdU.lsdeGbJj45KP4lmKCG61ng; rl_trait=RS_ENC_v3_eyJ1c2VySWQiOiJkYjVhMjI0MS0xYzc2LTQxYTMtYjVhYi0yOTgyNjRlY2RiMDgiLCJuYW1lIjoiWnViZWVuIFRvbGFuaSIsImVtYWlsIjoienViZWVuQGFpbWVkbGFicy5jb20iLCJ1c2VybmFtZSI6Inp1YmVlbi10b2xhbmktMjYwMzcxIiwiaXNWZXJpZmllZCI6dHJ1ZSwiaXNGb3VuZGVyIjpmYWxzZSwiY3VycmVudF91cmwiOiJodHRwczovL3d3dy5wcm9wdGVjaGJ1enouY29tLyIsImN1cnJlbnRfdXJsX3F1ZXJ5X3BhcmFtcyI6IiIsImN1cnJlbnRfcGF0aCI6Ii8ifQ%3D%3D; rl_user_id=RS_ENC_v3_ImRiNWEyMjQxLTFjNzYtNDFhMy1iNWFiLTI5ODI2NGVjZGIwOCI%3D; __Host-next-auth.csrf-token=d6388d625de0c8398b1dee1e13d036c7b39858b4af123bc945704a33b641e249%7Ce699e4cb7936ed795d0efef3087412c2845939edbec1ba7722b9f450f96fee4a; __Secure-next-auth.callback-url=https%3A%2F%2Fwww.proptechbuzz.com; next-auth.csrf-token=8e39e7e2ed372b859dae1994390ed3e6964142cff881408d3c9169910a37ead2%7Ca9365fad04f83f6b4c81fd97617639df4f8bd018de82e8b0bc543e5bf4aa86ad; next-auth.callback-url=https%3A%2F%2Fwww.proptechbuzz.com; _hjSession_3627636=eyJpZCI6ImVjNDJmZDAxLTVkMjEtNDFiOC04NDk0LTU4Yjg3YTliYTFlZSIsImMiOjE3NjA0Nzc3NTcyNDksInMiOjEsInIiOjEsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjowLCJzcCI6MH0=; ph_phc_l7QqCRnvKOMrECPIzUGYJDq6219iecfAY4gRDtG34T6_posthog=%7B%22distinct_id%22%3A%2201969164-6aee-7cc1-8890-650b53b36927%22%2C%22%24sesid%22%3A%5B1760478061489%2C%220199e4a6-a9ed-774d-8825-5b3a24cbc3fc%22%2C1760477751771%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fwww.proptechbuzz.com%2F%22%7D%7D; _hjSession_6438794=eyJpZCI6ImIyMGZkOTRjLTc0NTYtNGE1OS1hY2FmLTUxYWE1OTIzOThiZSIsImMiOjE3NjA0NzgwMzMyNzksInMiOjEsInIiOjEsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjowLCJzcCI6MX0=
+  Sec-Fetch-Dest: empty
+  Sec-Fetch-Mode: cors
+  Sec-Fetch-Site: same-origin
+  Priority: u=4
+  Pragma: no-cache
+  Cache-Control: no-cache
+  TE: trailers
+}
+
+settings {
+  encodeUrl: false
+}

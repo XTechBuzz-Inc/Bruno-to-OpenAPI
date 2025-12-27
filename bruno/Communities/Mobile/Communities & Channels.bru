@@ -1,0 +1,16 @@
+meta {
+  name: Communities & Channels
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apiUrl}}/mobile/v1/channels
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
+  

@@ -1,0 +1,53 @@
+{
+  "name": "bruno-openapi-converter",
+  "version": "1.0.0",
+  "description": "Convert between OpenAPI specifications and Bruno collection file structure",
+  "main": "src/index.js",
+  "bin": {
+    "openapi-to-bruno": "bin/openapi-to-bruno",
+    "bruno-to-openapi": "bin/bruno-to-openapi"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bruno",
+    "openapi",
+    "swagger",
+    "api",
+    "converter",
+    "bru"
+  ],
+  "author": "rreyn-bruno",
+  "license": "MIT",
+  "dependencies": {
+    "@usebruno/converters": "^0.1.0",
+    "@usebruno/filestore": "^0.1.0",
+    "@usebruno/schema": "^0.7.0",
+    "commander": "^11.1.0",
+    "fs-extra": "^11.2.0",
+    "js-yaml": "^4.1.0",
+    "jscodeshift": "^17.3.0",
+    "lodash": "^4.17.21",
+    "nanoid": "3.3.8",
+    "xml2js": "^0.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rreyn-bruno/bruno-openapi-converter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rreyn-bruno/bruno-openapi-converter/issues"
+  },
+  "homepage": "https://github.com/rreyn-bruno/bruno-openapi-converter#readme",
+  "files": [
+    "bin/",
+    "src/",
+    "README.md",
+    "LICENSE",
+    "EXAMPLES_SUPPORT.md"
+  ]
+}

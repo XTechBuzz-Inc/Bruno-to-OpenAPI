@@ -1,0 +1,15 @@
+meta {
+  name: Communities Listing
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{apiUrl}}/mobile/v1/communities/listing
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

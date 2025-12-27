@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander');
+const { convertBrunoToOpenApi } = require('../src/index');
+const path = require('path');
+const fs = require('fs-extra');
+
+const program = new Command();
+
+program
+  .name('bruno-to-openapi')
+  .description('Convert Bruno collection to OpenAPI specification')
+  .version('0.1.0')
+  .argument('<input>', 'Bruno collection directory path')
+  .argument('[output]', 'Output file path for OpenAPI spec (JSON)', './openapi.json')
+  .option('-v, --verbose', 'Enable verbose logging')
+  .option('-f, --force', 'Overwrite output file if it exists')
+  .action(async (input, output, options) => {
+    try {
+      // Resolve paths
+      const inputPath = path.resolve(process.cwd(), input);
+      const outputPath = path.resolve(process.cwd(), output);
+
+      // Check if input directory exists
+      if (!await fs.pathExists(inputPath)) {
+        console.error(`\n❌ Error: Input directory does not exist: ${inputPath}\n`);
+        process.exit(1);
+      }
+
+      // Check if output file exists
+      const outputExists = await fs.pathExists(outputPath);
+      if (outputExists && !options.force) {
+        console.error(`\n❌ Error: Output file already exists: ${outputPath}`);
+        console.error('Use --force to overwrite, or choose a different output file.\n');
+        process.exit(1);
+      }
+
+      // If force flag is set, remove existing file
+      if (outputExists && options.force) {
+        console.log(`🗑️  Removing existing file: ${outputPath}\n`);
+        await fs.remove(outputPath);
+      }
+
+      // Convert Bruno to OpenAPI
+      const result = await convertBrunoToOpenApi(inputPath, outputPath, {
+        verbose: options.verbose
+      });
+
+      // Print summary
+      console.log('\n📊 Summary:');
+      console.log(`   Collection: ${result.collectionName}`);
+      console.log(`   Paths: ${result.pathCount}`);
+      console.log(`   Operations: ${result.operationCount}`);
+      console.log(`   Tags: ${result.tagCount}`);
+      console.log(`   Output: ${result.outputPath}`);
+      console.log('');
+
+    } catch (error) {
+      console.error(`\n❌ Error: ${error.message}\n`);
+      if (options.verbose) {
+        console.error(error.stack);
+      }
+      process.exit(1);
+    }
+  });
+
+program.parse();
+
