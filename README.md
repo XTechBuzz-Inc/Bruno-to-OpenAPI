@@ -29,15 +29,31 @@ This gives you a **Git-ready Bruno collection** that can be:
 
 If you want to use this package in another repository:
 
+#### Option 1: Install from npm (published version)
 ```bash
-# Install as a dependency
 npm install bruno-openapi-converter
+# Or with yarn: yarn add bruno-openapi-converter
+# Or with pnpm: pnpm add bruno-openapi-converter
+```
 
-# Or with yarn
-yarn add bruno-openapi-converter
+#### Option 2: Install from local path (for development)
+```bash
+# From your other repository, install using file path
+npm install /path/to/Bruno-to-OpenAPI
 
-# Or with pnpm
-pnpm add bruno-openapi-converter
+# Example:
+npm install ../Bruno-to-OpenAPI
+```
+
+#### Option 3: Use npm link (for active development)
+```bash
+# In Bruno-to-OpenAPI directory
+cd /path/to/Bruno-to-OpenAPI
+npm link
+
+# In your other repository
+cd /path/to/your-other-repo
+npm link bruno-openapi-converter
 ```
 
 After installation, you can use the CLI commands via `npx`:
