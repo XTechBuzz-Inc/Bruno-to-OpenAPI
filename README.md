@@ -25,7 +25,49 @@ This gives you a **Git-ready Bruno collection** that can be:
 
 ## Installation
 
-### Global Installation (Recommended)
+### As a Package Dependency (For Use in Another Repository)
+
+If you want to use this package in another repository:
+
+```bash
+# Install as a dependency
+npm install bruno-openapi-converter
+
+# Or with yarn
+yarn add bruno-openapi-converter
+
+# Or with pnpm
+pnpm add bruno-openapi-converter
+```
+
+After installation, you can use the CLI commands via `npx`:
+
+```bash
+# Convert Bruno to OpenAPI
+npx bruno-to-openapi ./path/to/bruno-collection ./output/openapi.json
+
+# Convert OpenAPI to Bruno
+npx openapi-to-bruno ./path/to/openapi.json ./output/bruno-collection
+```
+
+Or add scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "bruno-to-openapi": "bruno-to-openapi ./bruno ./openapi.json",
+    "openapi-to-bruno": "openapi-to-bruno ./openapi.json ./bruno"
+  }
+}
+```
+
+Then run:
+```bash
+npm run bruno-to-openapi
+npm run openapi-to-bruno
+```
+
+### Global Installation (Recommended for CLI-only use)
 
 ```bash
 npm install -g bruno-openapi-converter
@@ -50,6 +92,8 @@ npm link
 
 ### Command Line
 
+#### Convert OpenAPI to Bruno
+
 ```bash
 # Convert from URL
 openapi-to-bruno https://petstore3.swagger.io/api/v3/openapi.json ./petstore
@@ -64,7 +108,22 @@ openapi-to-bruno ./openapi.json ./output --force
 openapi-to-bruno ./openapi.json ./output --verbose
 ```
 
+#### Convert Bruno to OpenAPI
+
+```bash
+# Convert Bruno collection to OpenAPI
+bruno-to-openapi ./path/to/bruno-collection ./output/openapi.json
+
+# With force overwrite
+bruno-to-openapi ./bruno-collection ./openapi.json --force
+
+# With verbose output
+bruno-to-openapi ./bruno-collection ./openapi.json --verbose
+```
+
 ### Programmatic Usage
+
+#### Convert OpenAPI to Bruno
 
 ```javascript
 const { convertOpenApiToFileStructure } = require('bruno-openapi-converter');
@@ -82,7 +141,35 @@ async function convert() {
 convert();
 ```
 
+#### Convert Bruno to OpenAPI
+
+```javascript
+const { convertBrunoToOpenApi } = require('bruno-openapi-converter');
+
+async function convert() {
+  const result = await convertBrunoToOpenApi(
+    './path/to/bruno-collection',
+    './output/openapi.json',
+    { verbose: true }
+  );
+  
+  console.log('Conversion complete!', result);
+  // {
+  //   success: true,
+  //   collectionName: 'My API',
+  //   outputPath: './output/openapi.json',
+  //   pathCount: 10,
+  //   operationCount: 15,
+  //   tagCount: 0
+  // }
+}
+
+convert();
+```
+
 ## CLI Options
+
+### openapi-to-bruno
 
 ```
 Usage: openapi-to-bruno [options] <input> [output]
@@ -95,6 +182,22 @@ Options:
   -V, --version        output the version number
   -v, --verbose        Enable verbose logging
   -f, --force          Overwrite output directory if it exists
+  -h, --help           display help for command
+```
+
+### bruno-to-openapi
+
+```
+Usage: bruno-to-openapi [options] <input> [output]
+
+Arguments:
+  input                Bruno collection directory path
+  output               Output file path for OpenAPI spec (JSON) (default: "./openapi.json")
+
+Options:
+  -V, --version        output the version number
+  -v, --verbose        Enable verbose logging
+  -f, --force          Overwrite output file if it exists
   -h, --help           display help for command
 ```
 
@@ -256,6 +359,28 @@ Converts an OpenAPI specification to Bruno file structure.
   outputPath: "./my-collection",
   itemCount: 15,
   environmentCount: 1
+}
+```
+
+### `convertBrunoToOpenApi(brunoDir, outputFile, options)`
+
+Converts a Bruno collection to OpenAPI specification.
+
+**Parameters:**
+- `brunoDir` (string): Bruno collection directory path
+- `outputFile` (string): Output file path for OpenAPI spec (JSON)
+- `options` (object): Optional configuration
+  - `verbose` (boolean): Enable verbose logging
+
+**Returns:** Promise<object>
+```javascript
+{
+  success: true,
+  collectionName: "My API",
+  outputPath: "./openapi.json",
+  pathCount: 10,
+  operationCount: 15,
+  tagCount: 0
 }
 ```
 
