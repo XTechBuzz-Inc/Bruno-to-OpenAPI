@@ -226,6 +226,7 @@ function inferSchema(obj) {
 async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
   const brunoConfig = await fs.readJson(path.join(brunoDir, 'bruno.json'));
   const items = [];
+  const { includeTags = [], excludeTags = [], verbose = false } = options;
   
   async function readDir(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
@@ -236,6 +237,7 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
         try {
           const parsed = parseBru(await fs.readFile(fullPath, 'utf8'));
           if ((parsed.meta?.type === 'http' || parsed.meta?.type === 'http-request') && parsed.http) {
+            const tags = parsed.meta.tags || [];
             items.push({
               name: parsed.meta.name,
               method: parsed.http.method?.toLowerCase(),
@@ -243,15 +245,66 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
               pathParams: parsed.params?.filter(p => p.type === 'path') || [],
               queryParams: parsed.params?.filter(p => p.type === 'query') || [],
               body: parsed.body,
-              docs: parsed.docs || ''
+              docs: parsed.docs || '',
+              tags: tags
             });
           }
-        } catch (e) {}
+        } catch (e) {
+          if (verbose) {
+            console.warn(`Warning: Failed to parse ${fullPath}:`, e.message);
+          }
+        }
       }
     }
   }
   
   await readDir(brunoDir);
+  
+  // Filter items based on tags
+  let filteredItems = items;
+  
+  if (includeTags.length > 0 || excludeTags.length > 0) {
+    filteredItems = items.filter(item => {
+      const itemTags = item.tags || [];
+      
+      // If includeTags is specified, item must have at least one matching tag
+      if (includeTags.length > 0) {
+        const hasIncludedTag = includeTags.some(tag => itemTags.includes(tag));
+        if (!hasIncludedTag) {
+          if (verbose) {
+            console.log(`  ⊘ Excluding "${item.name}" - no matching include tags`);
+          }
+          return false;
+        }
+      }
+      
+      // If excludeTags is specified, item must not have any matching tag
+      if (excludeTags.length > 0) {
+        const hasExcludedTag = excludeTags.some(tag => itemTags.includes(tag));
+        if (hasExcludedTag) {
+          if (verbose) {
+            console.log(`  ⊘ Excluding "${item.name}" - has excluded tag`);
+          }
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    if (verbose) {
+      console.log(`\n📋 Tag Filtering:`);
+      if (includeTags.length > 0) {
+        console.log(`   Include tags: ${includeTags.join(', ')}`);
+      }
+      if (excludeTags.length > 0) {
+        console.log(`   Exclude tags: ${excludeTags.join(', ')}`);
+      }
+      console.log(`   Total requests: ${items.length}`);
+      console.log(`   Filtered requests: ${filteredItems.length}`);
+      console.log('');
+    }
+  }
   
   let baseUrl = 'http://localhost:3000';
   try {
@@ -295,7 +348,7 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
   const components = { schemas: {} };
   let schemaCounter = 0;
   
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     // Remove baseUrl and apiUrl from the path, keep only the endpoint path
     let pathPattern = item.url.replace(baseUrl, '').replace(/^\/+/, '/');
     // If apiUrl contains /api, ensure path starts with /api
@@ -355,7 +408,9 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
     outputPath: outputFile,
     pathCount: Object.keys(paths).length,
     operationCount: Object.values(paths).reduce((sum, p) => sum + Object.keys(p).length, 0),
-    tagCount: 0
+    tagCount: 0,
+    totalRequests: items.length,
+    filteredRequests: filteredItems.length
   };
 }
 

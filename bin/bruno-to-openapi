@@ -15,6 +15,8 @@ program
   .argument('[output]', 'Output file path for OpenAPI spec (JSON)', './openapi.json')
   .option('-v, --verbose', 'Enable verbose logging')
   .option('-f, --force', 'Overwrite output file if it exists')
+  .option('--include-tags <tags>', 'Include only requests with these tags (comma-separated)', (value) => value.split(',').map(t => t.trim()).filter(t => t))
+  .option('--exclude-tags <tags>', 'Exclude requests with these tags (comma-separated)', (value) => value.split(',').map(t => t.trim()).filter(t => t))
   .action(async (input, output, options) => {
     try {
       // Resolve paths
@@ -43,7 +45,9 @@ program
 
       // Convert Bruno to OpenAPI
       const result = await convertBrunoToOpenApi(inputPath, outputPath, {
-        verbose: options.verbose
+        verbose: options.verbose,
+        includeTags: options.includeTags,
+        excludeTags: options.excludeTags
       });
 
       // Print summary
@@ -51,7 +55,13 @@ program
       console.log(`   Collection: ${result.collectionName}`);
       console.log(`   Paths: ${result.pathCount}`);
       console.log(`   Operations: ${result.operationCount}`);
-      console.log(`   Tags: ${result.tagCount}`);
+      if (result.totalRequests !== undefined && result.filteredRequests !== undefined) {
+        if (result.totalRequests !== result.filteredRequests) {
+          console.log(`   Requests: ${result.filteredRequests} of ${result.totalRequests} (filtered)`);
+        } else {
+          console.log(`   Requests: ${result.totalRequests}`);
+        }
+      }
       console.log(`   Output: ${result.outputPath}`);
       console.log('');
 

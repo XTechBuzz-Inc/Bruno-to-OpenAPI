@@ -119,6 +119,15 @@ bruno-to-openapi ./bruno-collection ./openapi.json --force
 
 # With verbose output
 bruno-to-openapi ./bruno-collection ./openapi.json --verbose
+
+# Include only requests with specific tags
+bruno-to-openapi ./bruno-collection ./openapi.json --include-tags "smoke,sanity"
+
+# Exclude requests with specific tags
+bruno-to-openapi ./bruno-collection ./openapi.json --exclude-tags "deprecated,test"
+
+# Combine include and exclude tags
+bruno-to-openapi ./bruno-collection ./openapi.json --include-tags "smoke" --exclude-tags "deprecated"
 ```
 
 ### Programmatic Usage
@@ -147,10 +156,22 @@ convert();
 const { convertBrunoToOpenApi } = require('bruno-openapi-converter');
 
 async function convert() {
+  // Basic conversion
   const result = await convertBrunoToOpenApi(
     './path/to/bruno-collection',
     './output/openapi.json',
     { verbose: true }
+  );
+  
+  // With tag filtering
+  const filteredResult = await convertBrunoToOpenApi(
+    './path/to/bruno-collection',
+    './output/openapi.json',
+    { 
+      verbose: true,
+      includeTags: ['smoke', 'sanity'],
+      excludeTags: ['deprecated']
+    }
   );
   
   console.log('Conversion complete!', result);
@@ -160,7 +181,9 @@ async function convert() {
   //   outputPath: './output/openapi.json',
   //   pathCount: 10,
   //   operationCount: 15,
-  //   tagCount: 0
+  //   tagCount: 0,
+  //   totalRequests: 20,
+  //   filteredRequests: 15
   // }
 }
 
@@ -198,8 +221,26 @@ Options:
   -V, --version        output the version number
   -v, --verbose        Enable verbose logging
   -f, --force          Overwrite output file if it exists
+  --include-tags <tags>  Include only requests with these tags (comma-separated)
+  --exclude-tags <tags>  Exclude requests with these tags (comma-separated)
   -h, --help           display help for command
 ```
+
+**Tag Filtering:**
+- Use `--include-tags` to include only requests that have at least one of the specified tags
+- Use `--exclude-tags` to exclude requests that have any of the specified tags
+- Tags are defined in the `meta` section of `.bru` files:
+  ```bru
+  meta {
+    name: Get users
+    type: http
+    tags: [
+      smoke
+      sanity
+    ]
+  }
+  ```
+- Both options can be used together: include tags are applied first, then exclude tags
 
 ## Input Formats
 
@@ -371,6 +412,8 @@ Converts a Bruno collection to OpenAPI specification.
 - `outputFile` (string): Output file path for OpenAPI spec (JSON)
 - `options` (object): Optional configuration
   - `verbose` (boolean): Enable verbose logging
+  - `includeTags` (array): Array of tags to include (only requests with at least one matching tag)
+  - `excludeTags` (array): Array of tags to exclude (exclude requests with any matching tag)
 
 **Returns:** Promise<object>
 ```javascript
@@ -380,7 +423,9 @@ Converts a Bruno collection to OpenAPI specification.
   outputPath: "./openapi.json",
   pathCount: 10,
   operationCount: 15,
-  tagCount: 0
+  tagCount: 0,
+  totalRequests: 20,
+  filteredRequests: 15
 }
 ```
 
