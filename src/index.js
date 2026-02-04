@@ -391,7 +391,7 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
 
   filteredItems.forEach((item) => {
     // Remove baseUrl and apiUrl from the path, keep only the endpoint path
-    let pathPattern = item.url.replace(baseUrl, "").replace(/^\/+/, "/");
+    let pathPattern = item.url.replace(baseUrl, "").split("?")[0].replace(/^\/+/, "/");
     // If apiUrl contains /api, ensure path starts with /api
     if (baseUrl.includes("/api") && !pathPattern.startsWith("/api")) {
       pathPattern = "/api" + pathPattern;

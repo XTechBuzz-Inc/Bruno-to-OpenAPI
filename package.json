@@ -1,6 +1,6 @@
 {
   "name": "bruno-openapi-converter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Convert between OpenAPI specifications and Bruno collection file structure",
   "main": "src/index.js",
   "bin": {
