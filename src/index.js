@@ -1,12 +1,14 @@
 // Use enhanced converter with improved example extraction
-const { openApiToBruno } = require('./enhanced-converters/cjs/index.js');
-const { stringifyRequest: vendoredStringifyRequest } = require('./vendored-filestore');
-const { stringifyCollection, stringifyFolder } = require('@usebruno/filestore');
-const fs = require('fs-extra');
-const path = require('path');
-const yaml = require('js-yaml');
-const parseBru = require('./vendored-bruno-lang/v2/src/bruToJson');
-const parseEnv = require('./vendored-bruno-lang/v2/src/envToJson');
+const { openApiToBruno } = require("./enhanced-converters/cjs/index.js");
+const {
+  stringifyRequest: vendoredStringifyRequest,
+} = require("./vendored-filestore");
+const { stringifyCollection, stringifyFolder } = require("@usebruno/filestore");
+const fs = require("fs-extra");
+const path = require("path");
+const yaml = require("js-yaml");
+const parseBru = require("./vendored-bruno-lang/v2/src/bruToJson");
+const parseEnv = require("./vendored-bruno-lang/v2/src/envToJson");
 
 /**
  * Sanitize a name to be safe for file system usage
@@ -14,11 +16,11 @@ const parseEnv = require('./vendored-bruno-lang/v2/src/envToJson');
  * @returns {string} - Sanitized name
  */
 function sanitizeName(name) {
-  if (!name) return 'unnamed';
+  if (!name) return "unnamed";
   // Replace invalid file system characters with hyphens
   return name
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
-    .replace(/\s+/g, ' ')
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "-")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -34,14 +36,18 @@ async function writeItems(items, currentPath) {
 
   for (const item of items) {
     try {
-      if (item.type === 'http-request' || item.type === 'graphql-request' || item.type === 'grpc-request') {
+      if (
+        item.type === "http-request" ||
+        item.type === "graphql-request" ||
+        item.type === "grpc-request"
+      ) {
         // Write request file
         const filename = sanitizeName(`${item.name}.bru`);
         const filePath = path.join(currentPath, filename);
         const content = vendoredStringifyRequest(item);
-        await fs.writeFile(filePath, content, 'utf8');
+        await fs.writeFile(filePath, content, "utf8");
         console.log(`  ✓ Created request: ${filename}`);
-      } else if (item.type === 'folder') {
+      } else if (item.type === "folder") {
         // Create folder directory
         const folderName = sanitizeName(item.name);
         const folderPath = path.join(currentPath, folderName);
@@ -50,9 +56,9 @@ async function writeItems(items, currentPath) {
 
         // Write folder.bru if folder has root metadata
         if (item.root) {
-          const folderBruPath = path.join(folderPath, 'folder.bru');
+          const folderBruPath = path.join(folderPath, "folder.bru");
           const folderContent = stringifyFolder(item.root);
-          await fs.writeFile(folderBruPath, folderContent, 'utf8');
+          await fs.writeFile(folderBruPath, folderContent, "utf8");
         }
 
         // Recursively write folder items
@@ -73,21 +79,28 @@ async function writeItems(items, currentPath) {
  * @param {Object} options - Additional options
  * @returns {Promise<Object>} - Conversion result
  */
-async function convertOpenApiToFileStructure(openApiSpec, outputDir, options = {}) {
+async function convertOpenApiToFileStructure(
+  openApiSpec,
+  outputDir,
+  options = {},
+) {
   try {
-    console.log('🔄 Converting OpenAPI to Bruno file structure...\n');
+    console.log("🔄 Converting OpenAPI to Bruno file structure...\n");
 
     // Step 1: Load OpenAPI spec
     let openApiData;
-    if (typeof openApiSpec === 'string') {
-      if (openApiSpec.startsWith('http://') || openApiSpec.startsWith('https://')) {
+    if (typeof openApiSpec === "string") {
+      if (
+        openApiSpec.startsWith("http://") ||
+        openApiSpec.startsWith("https://")
+      ) {
         // Load from URL
         console.log(`📥 Fetching OpenAPI spec from URL: ${openApiSpec}`);
         const response = await fetch(openApiSpec);
-        const contentType = response.headers.get('content-type');
+        const contentType = response.headers.get("content-type");
         const text = await response.text();
-        
-        if (contentType && contentType.includes('yaml')) {
+
+        if (contentType && contentType.includes("yaml")) {
           openApiData = yaml.load(text);
         } else {
           openApiData = JSON.parse(text);
@@ -95,10 +108,10 @@ async function convertOpenApiToFileStructure(openApiSpec, outputDir, options = {
       } else {
         // Load from file
         console.log(`📂 Loading OpenAPI spec from file: ${openApiSpec}`);
-        const fileContent = await fs.readFile(openApiSpec, 'utf8');
+        const fileContent = await fs.readFile(openApiSpec, "utf8");
         const ext = path.extname(openApiSpec).toLowerCase();
-        
-        if (ext === '.yaml' || ext === '.yml') {
+
+        if (ext === ".yaml" || ext === ".yml") {
           openApiData = yaml.load(fileContent);
         } else {
           openApiData = JSON.parse(fileContent);
@@ -109,68 +122,74 @@ async function convertOpenApiToFileStructure(openApiSpec, outputDir, options = {
       openApiData = openApiSpec;
     }
 
-    console.log(`✓ OpenAPI spec loaded: ${openApiData.info?.title || 'Untitled'}\n`);
+    console.log(
+      `✓ OpenAPI spec loaded: ${openApiData.info?.title || "Untitled"}\n`,
+    );
 
     // Step 2: Convert OpenAPI to Bruno JSON format
-    console.log('🔄 Converting to Bruno format...');
-    const brunoJson = openApiToBruno(openApiData, { groupBy: 'path' });
+    console.log("🔄 Converting to Bruno format...");
+    const brunoJson = openApiToBruno(openApiData, { groupBy: "path" });
     console.log(`✓ Converted to Bruno collection: ${brunoJson.name}\n`);
 
     // Step 3: Create output directory
     console.log(`📁 Creating output directory: ${outputDir}`);
     await fs.ensureDir(outputDir);
-    console.log('✓ Output directory ready\n');
+    console.log("✓ Output directory ready\n");
 
     // Step 4: Write bruno.json config file
-    console.log('📝 Writing collection files...');
+    console.log("📝 Writing collection files...");
     const brunoConfig = {
       version: "1",
       name: brunoJson.name,
       type: "collection",
-      ignore: ["node_modules", ".git"]
+      ignore: ["node_modules", ".git"],
     };
-    
-    const brunoConfigPath = path.join(outputDir, 'bruno.json');
-    await fs.writeFile(brunoConfigPath, JSON.stringify(brunoConfig, null, 2), 'utf8');
-    console.log('  ✓ Created bruno.json');
+
+    const brunoConfigPath = path.join(outputDir, "bruno.json");
+    await fs.writeFile(
+      brunoConfigPath,
+      JSON.stringify(brunoConfig, null, 2),
+      "utf8",
+    );
+    console.log("  ✓ Created bruno.json");
 
     // Step 5: Write collection.bru file
     const collectionRoot = brunoJson.root || {
       request: {
         headers: [],
-        auth: { mode: 'inherit' },
+        auth: { mode: "inherit" },
         script: {},
         vars: {},
-        tests: ''
+        tests: "",
       },
-      docs: openApiData.info?.description || ''
+      docs: openApiData.info?.description || "",
     };
-    
+
     const collectionContent = stringifyCollection(collectionRoot);
-    const collectionBruPath = path.join(outputDir, 'collection.bru');
-    await fs.writeFile(collectionBruPath, collectionContent, 'utf8');
-    console.log('  ✓ Created collection.bru');
+    const collectionBruPath = path.join(outputDir, "collection.bru");
+    await fs.writeFile(collectionBruPath, collectionContent, "utf8");
+    console.log("  ✓ Created collection.bru");
 
     // Step 6: Write environments if they exist
     if (brunoJson.environments && brunoJson.environments.length > 0) {
-      const environmentsDir = path.join(outputDir, 'environments');
+      const environmentsDir = path.join(outputDir, "environments");
       await fs.ensureDir(environmentsDir);
-      
+
       for (const env of brunoJson.environments) {
         const envFileName = sanitizeName(`${env.name}.bru`);
         const envFilePath = path.join(environmentsDir, envFileName);
-        
+
         // Create environment file content
         let envContent = `vars {\n`;
         if (env.variables && env.variables.length > 0) {
           for (const variable of env.variables) {
-            const prefix = variable.enabled === false ? '~' : '';
+            const prefix = variable.enabled === false ? "~" : "";
             envContent += `  ${prefix}${variable.name}: ${variable.value}\n`;
           }
         }
         envContent += `}\n`;
-        
-        await fs.writeFile(envFilePath, envContent, 'utf8');
+
+        await fs.writeFile(envFilePath, envContent, "utf8");
         console.log(`  ✓ Created environment: ${envFileName}`);
       }
     }
@@ -180,19 +199,18 @@ async function convertOpenApiToFileStructure(openApiSpec, outputDir, options = {
       await writeItems(brunoJson.items, outputDir);
     }
 
-    console.log('\n✅ Conversion complete!');
+    console.log("\n✅ Conversion complete!");
     console.log(`📦 Bruno collection created at: ${outputDir}`);
-    
+
     return {
       success: true,
       collectionName: brunoJson.name,
       outputPath: outputDir,
       itemCount: brunoJson.items?.length || 0,
-      environmentCount: brunoJson.environments?.length || 0
+      environmentCount: brunoJson.environments?.length || 0,
     };
-
   } catch (error) {
-    console.error('\n❌ Conversion failed:', error.message);
+    console.error("\n❌ Conversion failed:", error.message);
     if (options.verbose) {
       console.error(error.stack);
     }
@@ -204,18 +222,22 @@ async function convertOpenApiToFileStructure(openApiSpec, outputDir, options = {
  * Infer JSON schema from object
  */
 function inferSchema(obj) {
-  if (obj === null) return { type: 'null' };
+  if (obj === null) return { type: "null" };
   if (Array.isArray(obj)) {
-    return { type: 'array', items: obj.length > 0 ? inferSchema(obj[0]) : {} };
+    return { type: "array", items: obj.length > 0 ? inferSchema(obj[0]) : {} };
   }
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     const properties = {};
     const required = [];
     for (const [key, value] of Object.entries(obj)) {
       properties[key] = inferSchema(value);
       if (value !== null && value !== undefined) required.push(key);
     }
-    return { type: 'object', properties, required: required.length > 0 ? required : undefined };
+    return {
+      type: "object",
+      properties,
+      required: required.length > 0 ? required : undefined,
+    };
   }
   return { type: typeof obj };
 }
@@ -224,29 +246,37 @@ function inferSchema(obj) {
  * Convert Bruno collection to OpenAPI JSON
  */
 async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
-  const brunoConfig = await fs.readJson(path.join(brunoDir, 'bruno.json'));
+  const brunoConfig = await fs.readJson(path.join(brunoDir, "bruno.json"));
   const items = [];
   const { includeTags = [], excludeTags = [], verbose = false } = options;
-  
+
   async function readDir(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory() && entry.name !== 'environments') {
+      if (entry.isDirectory() && entry.name !== "environments") {
         await readDir(fullPath);
-      } else if (entry.name.endsWith('.bru') && !['collection.bru', 'folder.bru'].includes(entry.name)) {
+      } else if (
+        entry.name.endsWith(".bru") &&
+        !["collection.bru", "folder.bru"].includes(entry.name)
+      ) {
         try {
-          const parsed = parseBru(await fs.readFile(fullPath, 'utf8'));
-          if ((parsed.meta?.type === 'http' || parsed.meta?.type === 'http-request') && parsed.http) {
+          const parsed = parseBru(await fs.readFile(fullPath, "utf8"));
+          if (
+            (parsed.meta?.type === "http" ||
+              parsed.meta?.type === "http-request") &&
+            parsed.http
+          ) {
             const tags = parsed.meta.tags || [];
             items.push({
               name: parsed.meta.name,
               method: parsed.http.method?.toLowerCase(),
-              url: parsed.http.url?.replace(/\{\{([^}]+)\}\}/g, ''),
-              pathParams: parsed.params?.filter(p => p.type === 'path') || [],
-              queryParams: parsed.params?.filter(p => p.type === 'query') || [],
+              url: parsed.http.url?.replace(/\{\{([^}]+)\}\}/g, ""),
+              pathParams: parsed.params?.filter((p) => p.type === "path") || [],
+              queryParams:
+                parsed.params?.filter((p) => p.type === "query") || [],
               body: parsed.body,
-              docs: parsed.docs || '',
-              tags: tags
+              docs: parsed.docs || "",
+              tags: tags,
             });
           }
         } catch (e) {
@@ -257,30 +287,36 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
       }
     }
   }
-  
+
   await readDir(brunoDir);
-  
+
   // Filter items based on tags
   let filteredItems = items;
-  
+
   if (includeTags.length > 0 || excludeTags.length > 0) {
-    filteredItems = items.filter(item => {
+    filteredItems = items.filter((item) => {
       const itemTags = item.tags || [];
-      
+
       // If includeTags is specified, item must have at least one matching tag
       if (includeTags.length > 0) {
-        const hasIncludedTag = includeTags.some(tag => itemTags.includes(tag));
+        const hasIncludedTag = includeTags.some((tag) =>
+          itemTags.includes(tag),
+        );
         if (!hasIncludedTag) {
           if (verbose) {
-            console.log(`  ⊘ Excluding "${item.name}" - no matching include tags`);
+            console.log(
+              `  ⊘ Excluding "${item.name}" - no matching include tags`,
+            );
           }
           return false;
         }
       }
-      
+
       // If excludeTags is specified, item must not have any matching tag
       if (excludeTags.length > 0) {
-        const hasExcludedTag = excludeTags.some(tag => itemTags.includes(tag));
+        const hasExcludedTag = excludeTags.some((tag) =>
+          itemTags.includes(tag),
+        );
         if (hasExcludedTag) {
           if (verbose) {
             console.log(`  ⊘ Excluding "${item.name}" - has excluded tag`);
@@ -288,51 +324,56 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
           return false;
         }
       }
-      
+
       return true;
     });
-    
+
     if (verbose) {
       console.log(`\n📋 Tag Filtering:`);
       if (includeTags.length > 0) {
-        console.log(`   Include tags: ${includeTags.join(', ')}`);
+        console.log(`   Include tags: ${includeTags.join(", ")}`);
       }
       if (excludeTags.length > 0) {
-        console.log(`   Exclude tags: ${excludeTags.join(', ')}`);
+        console.log(`   Exclude tags: ${excludeTags.join(", ")}`);
       }
       console.log(`   Total requests: ${items.length}`);
       console.log(`   Filtered requests: ${filteredItems.length}`);
-      console.log('');
+      console.log("");
     }
   }
-  
-  let baseUrl = 'http://localhost:3000';
+
+  let baseUrl = "http://localhost:3000";
   try {
-    const envDir = path.join(brunoDir, 'environments');
+    const envDir = path.join(brunoDir, "environments");
     if (await fs.pathExists(envDir)) {
       // Prefer Local environment first, then production, then others
       const envFiles = (await fs.readdir(envDir)).sort((a, b) => {
-        const aLocal = a.toLowerCase().includes('local');
-        const bLocal = b.toLowerCase().includes('local');
-        const aProd = a.toLowerCase().includes('production');
-        const bProd = b.toLowerCase().includes('production');
+        const aLocal = a.toLowerCase().includes("local");
+        const bLocal = b.toLowerCase().includes("local");
+        const aProd = a.toLowerCase().includes("production");
+        const bProd = b.toLowerCase().includes("production");
         if (aLocal && !bLocal) return -1;
         if (!aLocal && bLocal) return 1;
         if (aProd && !bProd) return -1;
         if (!aProd && bProd) return 1;
         return a.localeCompare(b);
       });
-      
+
       for (const file of envFiles) {
-        if (file.endsWith('.bru')) {
+        if (file.endsWith(".bru")) {
           try {
-            const env = parseEnv(await fs.readFile(path.join(envDir, file), 'utf8'));
-            const baseUrlVar = env.variables?.find(v => v.name === 'baseUrl');
-            const apiUrlVar = env.variables?.find(v => v.name === 'apiUrl');
-            
+            const env = parseEnv(
+              await fs.readFile(path.join(envDir, file), "utf8"),
+            );
+            const baseUrlVar = env.variables?.find((v) => v.name === "baseUrl");
+            const apiUrlVar = env.variables?.find((v) => v.name === "apiUrl");
+
             if (apiUrlVar && baseUrlVar) {
               // Resolve {{baseUrl}} template in apiUrl
-              baseUrl = apiUrlVar.value.replace(/\{\{baseUrl\}\}/g, baseUrlVar.value);
+              baseUrl = apiUrlVar.value.replace(
+                /\{\{baseUrl\}\}/g,
+                baseUrlVar.value,
+              );
               break;
             } else if (baseUrlVar) {
               baseUrl = baseUrlVar.value;
@@ -343,80 +384,103 @@ async function convertBrunoToOpenApi(brunoDir, outputFile, options = {}) {
       }
     }
   } catch (e) {}
-  
+
   const paths = {};
   const components = { schemas: {} };
   let schemaCounter = 0;
-  
-  filteredItems.forEach(item => {
+
+  filteredItems.forEach((item) => {
     // Remove baseUrl and apiUrl from the path, keep only the endpoint path
-    let pathPattern = item.url.replace(baseUrl, '').replace(/^\/+/, '/');
+    let pathPattern = item.url.replace(baseUrl, "").replace(/^\/+/, "/");
     // If apiUrl contains /api, ensure path starts with /api
-    if (baseUrl.includes('/api') && !pathPattern.startsWith('/api')) {
-      pathPattern = '/api' + pathPattern;
+    if (baseUrl.includes("/api") && !pathPattern.startsWith("/api")) {
+      pathPattern = "/api" + pathPattern;
     }
-    pathPattern = pathPattern.replace(/:([^/]+)/g, '{$1}');
+    pathPattern = pathPattern.replace(/:([^/]+)/g, "{$1}");
     const params = [
-      ...item.pathParams.map(p => ({ name: p.name, in: 'path', required: true, schema: { type: 'string' } })),
-      ...item.queryParams.map(p => ({ name: p.name, in: 'query', required: false, schema: { type: 'string' } }))
+      ...item.pathParams.map((p) => ({
+        name: p.name,
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        ...(p.value && { example: p.value }),
+      })),
+      ...item.queryParams.map((p) => ({
+        name: p.name,
+        in: "query",
+        required: false,
+        schema: { type: "string" },
+        ...(p.value && { example: p.value }),
+      })),
     ];
-    
+
     const operation = {
       summary: item.name,
       description: item.docs,
-      operationId: sanitizeName(item.name).replace(/\s+/g, '_').toLowerCase(),
+      operationId: sanitizeName(item.name).replace(/\s+/g, "_").toLowerCase(),
       parameters: params,
-      responses: { '200': { description: 'Success' } }
+      responses: { 200: { description: "Success" } },
     };
-    
+
     if (item.body?.json) {
       try {
-        const jsonBody = typeof item.body.json === 'string' ? JSON.parse(item.body.json) : item.body.json;
+        const jsonBody =
+          typeof item.body.json === "string"
+            ? JSON.parse(item.body.json)
+            : item.body.json;
         const schema = inferSchema(jsonBody);
         const schemaName = `RequestBody${++schemaCounter}`;
         components.schemas[schemaName] = schema;
         operation.requestBody = {
           required: true,
-          content: { 'application/json': { schema: { $ref: `#/components/schemas/${schemaName}` }, example: jsonBody } }
+          content: {
+            "application/json": {
+              schema: { $ref: `#/components/schemas/${schemaName}` },
+              example: jsonBody,
+            },
+          },
         };
       } catch (e) {}
     }
-    
+
     if (!paths[pathPattern]) paths[pathPattern] = {};
     paths[pathPattern][item.method] = operation;
   });
-  
+
   // Extract base URL without /api for servers, keep /api in paths if needed
   let serverUrl = baseUrl;
-  if (baseUrl.includes('/api')) {
-    serverUrl = baseUrl.replace('/api', '');
+  if (baseUrl.includes("/api")) {
+    serverUrl = baseUrl.replace("/api", "");
   }
-  
+
   const openApi = {
-    openapi: '3.0.0',
-    info: { title: brunoConfig.name || 'API', version: '1.0.0' },
+    openapi: "3.0.0",
+    info: { title: brunoConfig.name || "API", version: "1.0.0" },
     servers: [{ url: serverUrl }],
     paths,
-    components: Object.keys(components.schemas).length > 0 ? components : undefined
+    components:
+      Object.keys(components.schemas).length > 0 ? components : undefined,
   };
-  
-  await fs.writeFile(outputFile, JSON.stringify(openApi, null, 2), 'utf8');
-  
+
+  await fs.writeFile(outputFile, JSON.stringify(openApi, null, 2), "utf8");
+
   return {
     success: true,
-    collectionName: brunoConfig.name || 'API',
+    collectionName: brunoConfig.name || "API",
     outputPath: outputFile,
     pathCount: Object.keys(paths).length,
-    operationCount: Object.values(paths).reduce((sum, p) => sum + Object.keys(p).length, 0),
+    operationCount: Object.values(paths).reduce(
+      (sum, p) => sum + Object.keys(p).length,
+      0,
+    ),
     tagCount: 0,
     totalRequests: items.length,
-    filteredRequests: filteredItems.length
+    filteredRequests: filteredItems.length,
   };
 }
 
 module.exports = {
   convertOpenApiToFileStructure,
   convertBrunoToOpenApi,
-  sanitizeName
+  sanitizeName,
 };
-
